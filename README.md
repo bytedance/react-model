@@ -4,11 +4,11 @@ The State management library for React
 
 🎉 Support Both Class and Hooks Api
 
-⚔ Fully TypeScript Support
+⚔ Full TypeScript Support
 
 📦 built with microbundle
 
-⚙️ Middlewares Pipline ( redux-devtools support ... )
+⚙️ Middleware Pipline ( redux-devtools support ... )
 
 ☂️ 100% test coverage, safe on production
 
@@ -100,7 +100,7 @@ npm install react-model
 
 ### Model
 
-Every model have their own state and actions.
+Every model has its own state and actions.
 
 ```typescript
 const initialState = {
@@ -170,7 +170,7 @@ export default Model(model)
 
 ### Model Register
 
-react-model keep the state and actions in the separate private store. So you need to register them if you want to use them as the public models.
+react-model keeps the application state and actions in separate private stores. So you need to register them if you want to use them as the public models.
 
 `model/index.ts`
 
@@ -189,7 +189,7 @@ export const { getInitialState, useStore, getState, actions, subscribe, unsubscr
 ### useStore
 
 The functional component in React ^16.8.0 can use Hooks to connect the global store.
-The actions return from useStore can invoke the dom changes.
+The actions returned from useStore can invoke dom changes.
 
 The execution of actions returned by useStore will invoke the rerender of current component first.
 
