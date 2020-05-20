@@ -1,6 +1,6 @@
 {
   "name": "react-model",
-  "version": "3.0.2",
+  "version": "3.1.2",
   "description": "The State management library for React",
   "main": "./dist/react-model.js",
   "umd:main": "./dist/react-model.umd.js",
@@ -17,34 +17,35 @@
   "author": "ArrayZoneYour <hustliyidong@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "immer": "^5.0.0"
+    "immer": "^6.0.0"
   },
   "peerDependencies": {
-    "react": "^16.3.0",
-    "react-dom": "^16.3.0"
+    "react": ">=16.3.0",
+    "react-dom": ">=16.3.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.1.0",
     "@commitlint/config-conventional": "^8.1.0",
-    "@testing-library/react": "^9.1.3",
+    "@testing-library/react": "^10.0.1",
     "@testing-library/react-hooks": "^2.0.1",
     "@types/babel__core": "^7.1.1",
     "@types/babel__template": "^7.0.2",
-    "@types/jest": "^24.0.5",
-    "@types/node": "^13.1.0",
+    "@types/jest": "^25.1.0",
+    "@types/node": "^14.0.0",
     "@types/react": "^16.9.1",
     "@types/react-dom": "^16.8.0",
     "commitizen": "^4.0.0",
     "cz-conventional-changelog": "^3.0.0",
     "husky": "^4.0.2",
     "jest": "^24.1.0",
-    "prettier": "^1.16.4",
+    "microbundle": "^0.11.0",
+    "prettier": "^2.0.0",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
     "react-test-renderer": "^16.8.6",
-    "remark-cli": "^7.0.0",
-    "remark-lint": "^6.0.4",
-    "remark-preset-lint-recommended": "^3.0.2",
+    "remark-cli": "^8.0.0",
+    "remark-lint": "^7.0.0",
+    "remark-preset-lint-recommended": "^4.0.0",
     "ts-jest": "^25.1.0",
     "tslint": "^5.14.0",
     "typescript": "^3.4.5"

@@ -1,6 +1,6 @@
 /// <reference path="./index.d.ts" />
 import * as React from 'react'
-import { PureComponent, useEffect, useState } from 'react'
+import { PureComponent, useEffect, useState, useRef } from 'react'
 import Global from './global'
 import {
   Consumer,
@@ -51,21 +51,47 @@ function Model<M extends Models, MT extends ModelType, E>(
       subscribe: (
         actionName: keyof MT['actions'] | Array<keyof MT['actions']>,
         callback: () => void
-      ) => subscribe(hash, actionName as (string | string[]), callback),
+      ) => subscribe(hash, actionName as string | string[], callback),
       unsubscribe: (
         actionName: keyof MT['actions'] | Array<keyof MT['actions']>
-      ) => unsubscribe(hash, actionName as (string | string[])),
+      ) => unsubscribe(hash, actionName as string | string[]),
       useStore: (depActions?: Array<keyof MT['actions']>) =>
-        useStore(hash, depActions as (string[] | undefined))
+        useStore(hash, depActions as string[] | undefined)
     }
   } else {
-    if (initialState) {
+    if (models.actions) {
+      console.error('invalid model(s) schema: ', models)
+      const errorFn = (fakeReturnVal?: unknown) => (..._: unknown[]) => {
+        return fakeReturnVal
+      }
+      // Fallback Functions
+      return {
+        __ERROR__: true,
+        actions: errorFn({}),
+        getActions: errorFn({}),
+        getInitialState: errorFn({}),
+        getState: errorFn({}),
+        subscribe: errorFn(),
+        unsubscribe: errorFn(),
+        useStore: errorFn([{}, {}])
+      } as any
+    }
+    if (initialState && !initialState.__FROM_SERVER__) {
       Global.State = initialState || {}
     }
     extContext && (Global.Context['__global'] = extContext)
     Object.entries(models).forEach(([name, model]) => {
+      if (model.__ERROR__) {
+        // Fallback State and Actions when model schema is invalid
+        console.error(name + " model's schema is invalid")
+        Global.State[name] = {}
+        Global.Actions[name] = {}
+        return
+      }
       if (!isAPI(model)) {
-        if (!Global.State[name]) {
+        if (initialState && initialState.__FROM_SERVER__) {
+          Global.State[name] = { ...model.state, ...initialState[name] }
+        } else if (!Global.State[name]) {
           Global.State[name] = model.state
         }
         if (model.middlewares) {
@@ -77,6 +103,12 @@ function Model<M extends Models, MT extends ModelType, E>(
         // If you develop on SSR mode, hot reload will still keep the old Global reference, so initialState won't change unless you restart the dev server
         if (!Global.State[name] || !initialState) {
           Global.State[name] = Global.State[model.__id]
+        }
+        if (initialState && initialState.__FROM_SERVER__) {
+          Global.State[name] = {
+            ...Global.State[model.__id],
+            ...initialState[name]
+          }
         }
         Global.Actions[name] = Global.Actions[model.__id]
         Global.AsyncState[name] = Global.AsyncState[model.__id]
@@ -119,7 +151,7 @@ const subscribe = (
   callback?: () => void
 ) => {
   if (Array.isArray(actions)) {
-    actions.forEach(actionName => {
+    actions.forEach((actionName) => {
       if (!Global.subscriptions[`${modelName}_${actionName}`]) {
         Global.subscriptions[`${modelName}_${actionName}`] = []
       }
@@ -175,21 +207,29 @@ const getActions = (
 }
 
 const useStore = (modelName: string, depActions?: string[]) => {
-  const setState = useState(Global.State[modelName])[1]
+  const setState = useState({})[1]
+  const hash = useRef<string>('')
 
   useEffect(() => {
     Global.uid += 1
-    const hash = '' + Global.uid
+    const local_hash = '' + Global.uid
+    hash.current = local_hash
     if (!Global.Setter.functionSetter[modelName]) {
       Global.Setter.functionSetter[modelName] = {}
     }
-    Global.Setter.functionSetter[modelName][hash] = { setState, depActions }
+    Global.Setter.functionSetter[modelName][local_hash] = {
+      setState,
+      depActions
+    }
     return function cleanup() {
-      delete Global.Setter.functionSetter[modelName][hash]
+      delete Global.Setter.functionSetter[modelName][local_hash]
     }
   }, [])
 
-  const updaters = getActions(modelName, { setState, type: 'function' })
+  const updaters = getActions(modelName, {
+    __hash: hash.current,
+    type: 'function'
+  })
   return [getState(modelName), updaters]
 }
 
@@ -217,7 +257,7 @@ const connect = (
       const { state: prevState = {}, actions: prevActions = {} } = this.props
       return (
         <Consumer>
-          {models => {
+          {(models) => {
             const { [`${modelName}`]: state } = models as any
             const actions = Global.Actions[modelName]
             return (

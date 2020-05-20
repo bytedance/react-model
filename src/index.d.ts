@@ -84,15 +84,23 @@ interface BaseContext<S = {}> {
 interface InnerContext<S = {}> extends BaseContext<S> {
   // Actions with function type context will always invoke current component's reload.
   type?: 'function' | 'outer' | 'class'
-  setState?: Dispatch<SetStateAction<S>>
+  __hash?: string
 }
 
-type Context<S = {}> = (InnerContext<S>) & {
+type Context<S = {}> = InnerContext<S> & {
   next: Function
   modelMiddlewares?: Middleware[]
 }
 
 type Middleware<S = {}> = (C: Context<S>, M: Middleware<S>[]) => void
+
+type MiddlewareConfig = {
+  logger: {
+    enable: boolean | ((context: BaseContext) => boolean)
+  }
+  devtools: { enable: boolean }
+  tryCatch: { enable: boolean }
+}
 
 interface Models<State = any, ActionKeys = any, ExtContext extends {} = {}> {
   [name: string]:
@@ -102,6 +110,7 @@ interface Models<State = any, ActionKeys = any, ExtContext extends {} = {}> {
 
 interface API<MT extends ModelType = ModelType<any, any, {}>> {
   __id: string
+  __ERROR__?: boolean
   useStore: (
     depActions?: Array<keyof MT['actions']>
   ) => [Get<MT, 'state'>, getConsumerActionsType<Get<MT, 'actions'>>]
@@ -141,7 +150,8 @@ interface APIs<M extends Models> {
     ? M[K]['actions']
     : unknown
   getInitialState: <T extends any>(
-    context?: T | undefined
+    context?: T | undefined,
+    config?: { isServer: boolean }
   ) => Promise<{
     [modelName: string]: any
   }>
@@ -167,6 +177,7 @@ type ModelType<
   ActionKeys = any,
   ExtContext extends {} = {}
 > = {
+  __ERROR__?: boolean
   actions: {
     [P in keyof ActionKeys]: Action<
       InitStateType,

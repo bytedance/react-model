@@ -1,9 +1,11 @@
 // @ts-ignore
-console.group = undefined
 /// <reference path="./index.d.ts" />
-import { Model } from '../src'
+import { Model, middlewares } from '../src'
 import { Counter } from '.'
 import { renderHook } from '@testing-library/react-hooks'
+
+middlewares.config.logger.enable = ({ actionName }) =>
+  ['increment'].indexOf(actionName) !== -1
 
 describe('PubSub', () => {
   test('run callback when specific action run', async () => {

@@ -4,9 +4,11 @@ The State management library for React
 
 🎉 Support Both Class and Hooks Api
 
+⚛️ Support [preact](https://github.com/byte-fe/react-model-experiment/tree/preact), react-native and Next.js
+
 ⚔ Full TypeScript Support
 
-📦 built with microbundle
+📦 Built with microbundle
 
 ⚙️ Middleware Pipline ( redux-devtools support ... )
 
@@ -54,8 +56,8 @@ const TodoList = () => {
 
 ## Recently Updated
 
+* [SSR Support: only return asyncState from server side](#ssr-with-nextjs)
 * [Expand Context](#expand-context)
-* [ModelType Update: NextModelType => ModelType](#model)
 
 ## Quick Start
 
@@ -422,10 +424,10 @@ MyApp.getInitialProps = async (context: NextAppContext) => {
   if (!(process as any).browser) {
     const initialModels = context.Component.getInitialProps
       ? await context.Component.getInitialProps(context.ctx)
-      await getInitialState() // get all model initialState
-      // : await getInitialState({ modelName: 'Home' }) // get Home initialState only
-      // : await getInitialState({ modelName: ['Home', 'Todo'] }) // get multi initialState
-      // : await getInitialState({ data }) // You can also pass some public data as asyncData params.
+      await getInitialState(undefined, { isServer: true }) // get all model initialState
+      // : await getInitialState({ modelName: 'Home' }, { isServer: true }) // get Home initialState only
+      // : await getInitialState({ modelName: ['Home', 'Todo'] }, { isServer: true }) // get multi initialState
+      // : await getInitialState({ data }, { isServer: true }) // You can also pass some public data as asyncData params.
     return { initialModels }
   } else {
     return { persistModel }
@@ -468,7 +470,7 @@ export default () => {
 ```tsx
 // ...
 Benchmark.getInitialProps = async () => {
-  return await getInitialState({ modelName: 'Todo' })
+  return await getInitialState({ modelName: 'Todo' }, { isServer: true })
 }
 ```
 </p>
@@ -663,13 +665,13 @@ export default connect(
 Just remove consoleDebugger middleware.
 
 ```typescript
-import { actionMiddlewares } from 'react-model'
+import { middlewares } from 'react-model'
 // Find the index of middleware
-const consoleDebuggerMiddlewareIndex = actionMiddlewares.indexOf(
-  middlewares.consoleDebugger
-)
-// Remove it
-actionMiddlewares.splice(consoleDebuggerMiddlewareIndex, 1)
+
+// Disable all actions' log
+middlewares.config.logger.enable = false
+// Disable logs from specific type of actions
+middlewares.config.logger.enable = ({ actionName }) => ['increment'].indexOf(actionName) !== -1
 ```
 
 [⇧ back to top](#table-of-contents)
